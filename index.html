@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to WebP Converter</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Font Awesome CDN 추가 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>이미지 WebP 변환기</h1>
+    <div class="btn-wrap">
+        <button id="resetButton"><i class="fas fa-redo-alt"></i> Reset</button>
+    </div>
+    <div class="file-input-container">
+        <input type="file" id="fileInput" accept=".png, .jpeg, .jpg" multiple>
+        <label for="fileInput" id="fileInputLabel"><i class="fas fa-upload"></i> 파일 선택</label>
+    </div>
+    <div class="file-list" id="fileList"></div>
+    <div class="quality-container">
+        <label for="qualityInput">Quality: <span id="qualityValue">95</span></label>
+        <input type="range" id="qualityInput" min="1" max="100" value="95">
+        <input type="number" id="qualityNumberInput" min="1" max="100" value="95">
+    </div>
+    <button id="convertButton">변환하기</button>
+    <div id="progress" class="progress"></div>
+    <div id="downloadLinks" class="download-links"></div>
+    <button id="downloadAllButton" class="download-all" style="display:none;">모두 ZIP으로 다운로드</button>
+</div>
+<script src="convert.js"></script>
+</body>
+</html>
