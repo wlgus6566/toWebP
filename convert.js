@@ -3,20 +3,18 @@ let filesArray = [];
 let fileBlobs = {};
 
 // 품질 슬라이더와 숫자 입력 필드를 동기화하는 함수
-function syncQualityControls(value) {
+document.getElementById('qualityInput').addEventListener('input', function() {
+    const value = this.value;
     document.getElementById('qualityValue').textContent = value;
     document.getElementById('qualityNumberInput').value = value;
-}
-
-// 품질 슬라이더의 입력 이벤트 처리
-document.getElementById('qualityInput').addEventListener('input', function() {
-    syncQualityControls(this.value);
 });
 
-// 품질 숫자 입력 필드의 입력 이벤트 처리
 document.getElementById('qualityNumberInput').addEventListener('input', function() {
-    syncQualityControls(this.value);
+    const value = this.value;
+    document.getElementById('qualityValue').textContent = value;
+    document.getElementById('qualityInput').value = value;
 });
+
 
 // 파일 입력 필드의 변경 이벤트 처리
 document.getElementById('fileInput').addEventListener('change', function() {
@@ -39,7 +37,6 @@ function updateFileList() {
 // 파일 항목을 생성하는 함수
 function createFileItem(file) {
     const fileItem = document.createElement('div');
-    fileItem.classList.add('file-item');
 
     const fileName = document.createElement('span');
     fileName.classList.add('file-name');
@@ -92,20 +89,40 @@ document.getElementById('convertButton').addEventListener('click', function() {
                     canvas.height = img.height;
                     ctx.drawImage(img, 0, 0);
 
-                    // 블롭은 웹 브라우저에서 텍스트, 이미지, 비디오 등 다양한 형식의 데이터를
-                    // 로컬 파일로 저장하거나 서버로 전송할 때 유용합니다.
+                    // 블롭은 웹 브라우저에서 텍스트, 이미지, 비디오 등 다양한 형식의 데이터를 다룰 때 사용할 수 있습니다.
+                    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
                     canvas.toBlob(function(blob) {
                         const url = URL.createObjectURL(blob);
                         const downloadLink = document.createElement('a');
                         const downloadItem = document.createElement('div');
-
                         const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, ""); // 확장자 제거
                         const downloadFileName = `${fileNameWithoutExt}.webp`;
+                        const thumbnailDiv = document.createElement('div');
+                        const thumbnail = document.createElement('img');
+                        thumbnailDiv.classList.add('thumbnail');
+                        thumbnail.src = url;
+                        thumbnail.addEventListener('click', function() {
+                            document.getElementById('imageModal').style.display = 'block';
+                            document.getElementById('previewImage').src = url;
+                        });
+                        document.querySelector('.close').addEventListener('click', function() {
+                            document.getElementById('imageModal').style.display = 'none';
+                        });
+
                         downloadLink.href = url;
                         downloadLink.download = downloadFileName;
                         downloadLink.textContent = `Download ${downloadFileName}`;
 
+                        const fileSize = blob.size >= 1024 * 1024
+                            ? (blob.size / (1024 * 1024)).toFixed(2) + ' MB'
+                            : (blob.size / 1024).toFixed(2) + ' KB';
+                        const fileSizeText = document.createElement('span');
+                        fileSizeText.textContent = `(${fileSize})`;
+
                         downloadItem.appendChild(downloadLink);
+                        downloadItem.appendChild(fileSizeText);
+                        thumbnailDiv.appendChild(thumbnail);
+                        downloadItem.appendChild(thumbnailDiv);
                         downloadLinksDiv.appendChild(downloadItem);
 
                         // ZIP 파일에 추가
@@ -118,10 +135,12 @@ document.getElementById('convertButton').addEventListener('click', function() {
                         if (completed === filesArray.length) {
                             downloadAllButton.style.display = 'block';
                         }
+                        console.log('qualityInput',qualityInput)
                     }, 'image/webp', qualityInput / 100);
                 };
                 console.log('event',event)
                 img.src = event.target.result;
+                //  document.querySelector('.preview-img').appendChild(img);
             };
             //파일의 내용을 base64 형식의 Data URL로 변환합니다.
             reader.readAsDataURL(file);

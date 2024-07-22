@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image to WebP Converter</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="./styles.css">
     <!-- Font Awesome CDN 추가 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
@@ -29,6 +29,12 @@
     <div id="progress" class="progress"></div>
     <div id="downloadLinks" class="download-links"></div>
     <button id="downloadAllButton" class="download-all" style="display:none;">모두 ZIP으로 다운로드</button>
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="previewImage" class="preview-image">
+        </div>
+    </div>
 </div>
 <script src="convert.js"></script>
 </body>
