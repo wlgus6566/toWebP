@@ -42,11 +42,16 @@ function createFileItem(file) {
     fileName.classList.add('file-name');
     fileName.textContent = file.name;
 
+    // 파일 크기 표시
+    const fileSizeText = document.createElement('span.file-size');
+    fileSizeText.textContent = ` (${createFileSizeText(file.size)})`;
+
     const deleteButton = document.createElement('button');
     deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
     deleteButton.classList.add('delete-button');
 
     fileItem.appendChild(fileName);
+    fileItem.appendChild(fileSizeText);
     fileItem.appendChild(deleteButton);
 
     // 삭제 버튼 클릭 이벤트 처리
@@ -80,7 +85,7 @@ document.getElementById('convertButton').addEventListener('click', function() {
             reader.onload = function(event) {
                 // 이미지 로드 후 캔버스에 그림
                 // img 객체가 이미지를 성공적으로 로드하면, onload 이벤트가 발생합니다.
-                // 이 이벤트 핸들러 내에서 이미지를 캔버스에 그린 후, canvas.toBlob을 사용하여 이미지를 WebP 형식의 Blob으로 변환합니다.
+                // 이 이벤트 핸들러 내에서 이미지를 캔버스에 그린 후, canvas.toBlob을 사용하여 이미지를 WebP 형식의 Blob으로 변환
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
@@ -97,6 +102,8 @@ document.getElementById('convertButton').addEventListener('click', function() {
                         const downloadItem = document.createElement('div');
                         const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, ""); // 확장자 제거
                         const downloadFileName = `${fileNameWithoutExt}.webp`;
+
+                        // 이미지 미리보기
                         const thumbnailDiv = document.createElement('div');
                         const thumbnail = document.createElement('img');
                         thumbnailDiv.classList.add('thumbnail');
@@ -113,11 +120,8 @@ document.getElementById('convertButton').addEventListener('click', function() {
                         downloadLink.download = downloadFileName;
                         downloadLink.textContent = `Download ${downloadFileName}`;
 
-                        const fileSize = blob.size >= 1024 * 1024
-                            ? (blob.size / (1024 * 1024)).toFixed(2) + ' MB'
-                            : (blob.size / 1024).toFixed(2) + ' KB';
                         const fileSizeText = document.createElement('span');
-                        fileSizeText.textContent = `(${fileSize})`;
+                        fileSizeText.textContent = ` (${createFileSizeText(blob.size)})`;
 
                         downloadItem.appendChild(downloadLink);
                         downloadItem.appendChild(fileSizeText);
@@ -140,23 +144,22 @@ document.getElementById('convertButton').addEventListener('click', function() {
                 };
                 console.log('event',event)
                 img.src = event.target.result;
-                //  document.querySelector('.preview-img').appendChild(img);
             };
             //파일의 내용을 base64 형식의 Data URL로 변환합니다.
             reader.readAsDataURL(file);
         });
 
-        // 모두 다운로드 버튼 클릭 이벤트 처리
+        // 모두 ZIP으로 다운로드 클릭 이벤트 처리
         downloadAllButton.addEventListener('click', function() {
-            // 변환된 이미지가 존재하는지 확인합니다.
+            // 변환된 이미지가 존재하는지 확인
             if (Object.keys(fileBlobs).length > 0) {
                 const zip = new JSZip();
-                // 변환된 각 이미지를 zip 파일에 추가합니다.
+                // 변환된 각 이미지를 zip 파일에 추가
                 Object.keys(fileBlobs).forEach(fileName => {
-                    zip.file(fileName, fileBlobs[fileName]);// // 파일 이름과 Blob 데이터를 zip 파일에 추가합니다.
+                    zip.file(fileName, fileBlobs[fileName]);// // 파일 이름과 Blob 데이터를 zip 파일에 추가
                 });
 
-                // zip 파일을 Blob 형태로 생성합니다.
+                // ZIP 파일 생성
                 zip.generateAsync({ type: "blob" }).then(function(content) {
                     const link = document.createElement("a");
                     link.href = URL.createObjectURL(content);
@@ -171,6 +174,12 @@ document.getElementById('convertButton').addEventListener('click', function() {
         alert('1개 이상의 파일을 선택해주세요.');
     }
 });
+
+function createFileSizeText(fileSize) {
+    return fileSize >= 1024 * 1024
+        ? (fileSize / (1024 * 1024)).toFixed(2) + ' MB'
+        : (fileSize / 1024).toFixed(2) + ' KB';
+}
 
 // 초기화 버튼 클릭 이벤트 처리
 document.getElementById('resetButton').addEventListener('click', function() {
