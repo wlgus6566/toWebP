@@ -126,7 +126,7 @@ document.getElementById('convertButton').addEventListener('click', function() {
                         const sizeReduction = ((originalSize - newSize) / originalSize * 100).toFixed(2);
                         const fileSizeRatio = document.createElement('span');
                         const fileSizeText = document.createElement('span');
-                        fileSizeRatio.textContent = ` - ${sizeReduction}% 감소!`;
+                        fileSizeRatio.textContent = sizeReduction > 0 ? `${sizeReduction}% 감소!` : `${sizeReduction}% 증가ㅜ`;
                         fileSizeText.textContent = ` (${createFileSizeText(blob.size)})`;
 
                         downloadItem.appendChild(downloadLink);
