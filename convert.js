@@ -1,3 +1,4 @@
+
 // 선택된 파일들을 저장할 배열과 변환된 파일들의 Blob 객체를 저장할 객체
 let filesArray = [];
 let fileBlobs = {};
@@ -36,6 +37,7 @@ function updateFileList() {
 
 // 파일 항목을 생성하는 함수
 function createFileItem(file) {
+    console.log('file',file)
     const fileItem = document.createElement('div');
 
     const fileName = document.createElement('span');
@@ -81,18 +83,17 @@ document.getElementById('convertButton').addEventListener('click', function() {
 
         filesArray.forEach((file, index) => {
             const reader = new FileReader();// FileReader는 JavaScript의 내장 객체로, 웹 애플리케이션이 비동기적으로 파일을 읽을 수 있게 해줍니다.
-
+            // 이미지 파일을 로드하고 canvas에 그린 다음, 이를 WebP 형식으로 변환하는 과정
             reader.onload = function(event) {
-                // 이미지 로드 후 캔버스에 그림
-                // img 객체가 이미지를 성공적으로 로드하면, onload 이벤트가 발생합니다.
-                // 이 이벤트 핸들러 내에서 이미지를 캔버스에 그린 후, canvas.toBlob을 사용하여 이미지를 WebP 형식의 Blob으로 변환
-                const img = new Image();
+                const img = new Image(); // 새로운 이미지 객체 생성
+
                 img.onload = function() {
+                    console.log('width:',img.width,'height:',img.height)
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     canvas.width = img.width;
                     canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
+                    ctx.drawImage(img, 0, 0);// 이미지 데이터를 캔버스에 그림
 
                     // 블롭은 웹 브라우저에서 텍스트, 이미지, 비디오 등 다양한 형식의 데이터를 다룰 때 사용할 수 있습니다.
                     // https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
@@ -118,13 +119,19 @@ document.getElementById('convertButton').addEventListener('click', function() {
 
                         downloadLink.href = url;
                         downloadLink.download = downloadFileName;
-                        downloadLink.textContent = `Download ${downloadFileName}`;
+                        downloadLink.textContent = `${downloadFileName}`;
 
+                        const originalSize = file.size;
+                        const newSize = blob.size;
+                        const sizeReduction = ((originalSize - newSize) / originalSize * 100).toFixed(2);
+                        const fileSizeRatio = document.createElement('span');
                         const fileSizeText = document.createElement('span');
+                        fileSizeRatio.textContent = ` - ${sizeReduction}% 감소!`;
                         fileSizeText.textContent = ` (${createFileSizeText(blob.size)})`;
 
                         downloadItem.appendChild(downloadLink);
-                        downloadItem.appendChild(fileSizeText);
+                        downloadItem.appendChild(fileSizeText); // 파일 크기
+                        downloadItem.appendChild(fileSizeRatio); // 감소 비율
                         thumbnailDiv.appendChild(thumbnail);
                         downloadItem.appendChild(thumbnailDiv);
                         downloadLinksDiv.appendChild(downloadItem);
@@ -139,8 +146,7 @@ document.getElementById('convertButton').addEventListener('click', function() {
                         if (completed === filesArray.length) {
                             downloadAllButton.style.display = 'block';
                         }
-                        console.log('qualityInput',qualityInput)
-                    }, 'image/webp', qualityInput / 100);
+                    }, 'image/webp', qualityInput / 100); //default는 'image/png'
                 };
                 console.log('event',event)
                 img.src = event.target.result;
@@ -190,4 +196,7 @@ document.getElementById('resetButton').addEventListener('click', function() {
     document.getElementById('downloadLinks').innerHTML = '';
     document.getElementById('progress').innerHTML = '';
     document.getElementById('downloadAllButton').style.display = 'none';
+    document.getElementById('qualityValue').textContent = '95';
+    document.getElementById('qualityInput').value = '95';
+    document.getElementById('qualityNumberInput').value = '95';
 });
