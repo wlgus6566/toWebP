@@ -1,4 +1,3 @@
-
 // 선택된 파일들을 저장할 배열과 변환된 파일들의 Blob 객체를 저장할 객체
 let filesArray = [];
 let fileBlobs = {};
@@ -66,6 +65,24 @@ function createFileItem(file) {
     return fileItem;
 }
 
+// downloadAllButton의 클릭 이벤트 핸들러를 함수로 정의
+function handleDownloadAllClick() {
+    if (Object.keys(fileBlobs).length > 0) {
+        const zip = new JSZip();
+        Object.keys(fileBlobs).forEach(fileName => {
+            zip.file(fileName, fileBlobs[fileName]); // 파일 이름과 Blob 데이터를 zip 파일에 추가
+        });
+
+        zip.generateAsync({ type: "blob" }).then(function(content) {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(content);
+            link.download = "images.zip";
+            link.click();
+        });
+    } else {
+        alert('다운로드 할 이미지가 없습니다.');
+    }
+}
 
 // 변환 버튼 클릭 이벤트 처리
 document.getElementById('convertButton').addEventListener('click', function() {
@@ -73,6 +90,7 @@ document.getElementById('convertButton').addEventListener('click', function() {
     const downloadLinksDiv = document.getElementById('downloadLinks');
     const progressDiv = document.getElementById('progress');
     const downloadAllButton = document.getElementById('downloadAllButton');
+
     downloadLinksDiv.innerHTML = '';
     progressDiv.innerHTML = '';
     downloadAllButton.style.display = 'none';
@@ -82,21 +100,17 @@ document.getElementById('convertButton').addEventListener('click', function() {
         fileBlobs = {}; // 변환된 파일 블롭 초기화
 
         filesArray.forEach((file, index) => {
-            const reader = new FileReader();// FileReader는 JavaScript의 내장 객체로, 웹 애플리케이션이 비동기적으로 파일을 읽을 수 있게 해줍니다.
-            // 이미지 파일을 로드하고 canvas에 그린 다음, 이를 WebP 형식으로 변환하는 과정
+            const reader = new FileReader();
             reader.onload = function(event) {
-                const img = new Image(); // 새로운 이미지 객체 생성
+                const img = new Image();
 
                 img.onload = function() {
-                    console.log('width:',img.width,'height:',img.height)
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     canvas.width = img.width;
                     canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);// 이미지 데이터를 캔버스에 그림
+                    ctx.drawImage(img, 0, 0);
 
-                    // 블롭은 웹 브라우저에서 텍스트, 이미지, 비디오 등 다양한 형식의 데이터를 다룰 때 사용할 수 있습니다.
-                    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
                     canvas.toBlob(function(blob) {
                         const url = URL.createObjectURL(blob);
                         const downloadLink = document.createElement('a');
@@ -126,7 +140,7 @@ document.getElementById('convertButton').addEventListener('click', function() {
                         const sizeReduction = ((originalSize - newSize) / originalSize * 100).toFixed(2);
                         const fileSizeRatio = document.createElement('span');
                         const fileSizeText = document.createElement('span');
-                        fileSizeRatio.textContent = sizeReduction > 0 ? `${sizeReduction}% 감소!` : `${sizeReduction}% 증가ㅜ`;
+                        fileSizeRatio.textContent = ` (파일 크기가 ${sizeReduction}% 감소하였습니다!)`;
                         fileSizeText.textContent = ` (${createFileSizeText(blob.size)})`;
 
                         downloadItem.appendChild(downloadLink);
@@ -146,36 +160,16 @@ document.getElementById('convertButton').addEventListener('click', function() {
                         if (completed === filesArray.length) {
                             downloadAllButton.style.display = 'block';
                         }
-                    }, 'image/webp', qualityInput / 100); //default는 'image/png'
+                    }, 'image/webp', qualityInput / 100);
                 };
-                console.log('event',event)
                 img.src = event.target.result;
             };
-            //파일의 내용을 base64 형식의 Data URL로 변환합니다.
             reader.readAsDataURL(file);
         });
 
-        // 모두 ZIP으로 다운로드 클릭 이벤트 처리
-        downloadAllButton.addEventListener('click', function() {
-            // 변환된 이미지가 존재하는지 확인
-            if (Object.keys(fileBlobs).length > 0) {
-                const zip = new JSZip();
-                // 변환된 각 이미지를 zip 파일에 추가
-                Object.keys(fileBlobs).forEach(fileName => {
-                    zip.file(fileName, fileBlobs[fileName]);// // 파일 이름과 Blob 데이터를 zip 파일에 추가
-                });
-
-                // ZIP 파일 생성
-                zip.generateAsync({ type: "blob" }).then(function(content) {
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(content);
-                    link.download = "images.zip";
-                    link.click();
-                });
-            } else {
-                alert('다운로드 할 이미지가 없습니다.');
-            }
-        });
+        // 기존의 click 이벤트 리스너를 제거한 뒤 새로운 리스너를 추가
+        downloadAllButton.removeEventListener('click', handleDownloadAllClick); // 기존 핸들러 제거
+        downloadAllButton.addEventListener('click', handleDownloadAllClick); // 새로운 핸들러 추가
     } else {
         alert('1개 이상의 파일을 선택해주세요.');
     }
